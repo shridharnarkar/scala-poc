@@ -227,16 +227,19 @@ object RuleFunctionsObject {
     val route = RouteDaoObject.getRouteById(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_Route).toInt)
     val ticketStatus = referenceData.getTicketStatusById(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_TicketStatus).toInt)
     val product = ProductDaoObject.getProductById(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_Product).toInt)
+    val issuingLocation = referenceData.getLocationById(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_Origin).toInt)
 
     /**
      * fare checking exclusion
      */
-    fcResult = ifExcludeFare(locIssueDate, new FareDBRecord(originLocation.location.get, destinationLocation.location.get, sellingLocation.location.get, route.routeCode.get, product.productCode.get, ticketStatus.ticketStatusCode.get, potentialFCExclusionFare))
+    //fcResult = ifExcludeFare(locIssueDate, new FareDBRecord(issuingLocation.location.get, originLocation.location.get, destinationLocation.location.get, sellingLocation.location.get, route.routeCode.get, product.productCode.get, ticketStatus.ticketStatusCode.get, potentialFCExclusionFare))
+    fcResult = ifExcludeFare(locIssueDate, new FareDBRecord(Some(issuingLocation.location.get), Some(originLocation.location.get), Some(destinationLocation.location.get), Some(sellingLocation.location.get), Some(route.routeCode.get), Some(product.productCode.get), Some(ticketStatus.ticketStatusCode.get), Some(potentialFCExclusionFare)))
+
     /**
      * if record is excluded from fare checking do nothing and return values
      * calculated upto now
      */
-    if (fcResult == referenceData.getCodeBookIdByValue(UtpConstants.FARE_CHECKING_EXCLUSION))  return (fcResult, fcFullFare)
+    if (fcResult == referenceData.getCodeBookIdByValue(UtpConstants.FARE_CHECKING_EXCLUSION)) return (fcResult, fcFullFare)
 
     /**
      * Advance fare checks to be done only if Advance Issue Marker contains
@@ -244,16 +247,15 @@ object RuleFunctionsObject {
      */
     if (referenceData.getCodeBookIdByValue(UtpConstants.ADVANCE_ISSUE) == Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_AdvanceIssueMarker).toInt) {
       //originLocation: String, destinationLocation: String, sellingLocation: String, routeCode: String, productCode: String, ticketStatusCode: String, fare: Double=6.65, nullFare: Double=0.0, value: Int=0, withEffectFrom: DateTime=new DateTime(2015,1,1,0,0), withEffectUntil: DateTime=new DateTime(2015,12,31,23,59)
-      locTravelDate = advanceFCCheck(locIssueDate, new FareDBRecord(originLocation.location.get, destinationLocation.location.get, sellingLocation.location.get,
-        route.routeCode.get, product.productCode.get, ticketStatus.ticketStatusCode.get, potentialFCExclusionFare, fareInPennies))
+      locTravelDate = advanceFCCheck(locIssueDate, new FareDBRecord(Some(issuingLocation.location.get), Some(originLocation.location.get), Some(destinationLocation.location.get), Some(sellingLocation.location.get), Some(route.routeCode.get), Some(product.productCode.get), Some(ticketStatus.ticketStatusCode.get), Some(potentialFCExclusionFare), fareInPennies))
     } //if code_book.Advance Issue = zRecord.Advance Issue Marker
 
     /**
      * Fare checking calculating main fare in pennies
      */
 
-    mainFareInPennies = calculateDiscountedFareInPennies(new FareDBRecord(originLocation.location.get, destinationLocation.location.get, sellingLocation.location.get,
-      route.routeCode.get, product.productCode.get, ticketStatus.ticketStatusCode.get), locIssueDate, locTravelDate, nonPCDiscount, zRecord, UtpConstants.SPACES)
+    mainFareInPennies = calculateDiscountedFareInPennies(new FareDBRecord(Some(issuingLocation.location.get), Some(originLocation.location.get), Some(destinationLocation.location.get), Some(sellingLocation.location.get),
+      Some(route.routeCode.get), Some(product.productCode.get), Some(ticketStatus.ticketStatusCode.get)), locIssueDate, locTravelDate, nonPCDiscount, zRecord, UtpConstants.SPACES)
 
     /**
      * Next check for the number of adults and child in the record
@@ -271,9 +273,8 @@ object RuleFunctionsObject {
     else if (adultCount > 0 && childCount > 0) {
       val childTicketStatus = deriveStatusCode(ticketStatus.ticketStatusCode.get)
       val childFareInPennies = calculateDiscountedFareInPennies(
-        new FareDBRecord(originLocation.location.get, destinationLocation.location.get,
-          sellingLocation.location.get, route.routeCode.get, product.productCode.get,
-          childTicketStatus), locIssueDate, locTravelDate, nonPCDiscount, zRecord, childTicketStatus)
+        new FareDBRecord(Some(issuingLocation.location.get), Some(originLocation.location.get), Some(destinationLocation.location.get),
+          Some(sellingLocation.location.get), Some(route.routeCode.get), Some(product.productCode.get), Some(childTicketStatus)), locIssueDate, locTravelDate, nonPCDiscount, zRecord, childTicketStatus)
       calTotalFare = mainFareInPennies * adultCount + childFareInPennies * childCount
     } else {
       fcResult = referenceData.getCodeBookIdByValue(UtpConstants.FARE_CHECKING_INCALCULABLE)
@@ -331,7 +332,7 @@ object RuleFunctionsObject {
     }
 
     val seasonEndDate = seasonTicketEndDate.minusDays(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_LostDays).toInt)
-   /**
+    /**
      * if season ends before travel starts, result is insensible hence
      * INCALCULABLE should be returned
      */
@@ -367,7 +368,7 @@ object RuleFunctionsObject {
       return (fcResult, fcFullFare)
     }
 
-    var locAdjSeasonFare : Double = calTotalFare * (locSeasonAdjustmentFactor / 40)
+    var locAdjSeasonFare: Double = calTotalFare * (locSeasonAdjustmentFactor / 40)
     val ticketTypeCodeBook: CodeBookDBRecord = referenceData.getCodeBookById(ticketStatus.tisId)
     var roundingFactor: Int = 0
 
@@ -511,10 +512,19 @@ object RuleFunctionsObject {
 
   /**
    * Implementation of the LN4350S_V_IF_EXCLUDE_FARE
+   *  This action block is to determine whether the fare is to
+   *  be excluded from fares checking.  If the fare is excluded
+   *  then the out cob_id is set to the exlcuded code passed in.
+   *  Otherwise the out cob_id is set to zero, indicating that
+   *  this fare should be checked.
    */
   def ifExcludeFare(locIssueDate: DateTime, fcExclusions: FareDBRecord): Int =
     {
-      referenceData.getCodeBookIdByValue(UtpConstants.FARE_CHECKING_EXCLUSION)
+      if (referenceData.isFareCheckExclusion(new Date(locIssueDate.getMillis()), fcExclusions)) {
+        return referenceData.getCodeBookIdByValue(UtpConstants.FARE_CHECKING_EXCLUSION)
+      } else {
+        return 0
+      }
       //where value = 'Exclusion'
     }
 
@@ -555,7 +565,7 @@ object RuleFunctionsObject {
     var outputFboList = new ListBuffer[FareDBRecord]
 
     if (EXITSTATE.equalsIgnoreCase("processing_ok")) {
-      if (fareObjIn.ticketStatus.toInt > ("000").toInt) {
+      if (fareObjIn.ticketStatus.getOrElse("0").toInt > ("000").toInt) {
         /** TODO READ replacement ticket_status **/
         val ticket_status = fareObjIn.ticketStatus
 

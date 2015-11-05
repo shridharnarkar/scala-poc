@@ -2,10 +2,8 @@ package com.atos.worldline.utp.rules
 
 import java.util.Locale
 import java.util.ResourceBundle
-
 import org.joda.time.Days
 import org.slf4j.LoggerFactory
-
 import com.atos.worldline.utp.constants.UtpConstants
 import com.atos.worldline.utp.dao.ApplicationParametersDaoObject
 import com.atos.worldline.utp.dao.BusinessDaoObject
@@ -27,6 +25,8 @@ import com.atos.worldline.utp.record.ProductDBRecord
 import com.atos.worldline.utp.record.TicketStatusDBRecord
 import com.atos.worldline.utp.record.TicketStatusLinkDBRecord
 import com.atos.worldline.utp.record.ZRecord
+import com.atos.worldline.utp.dao.FaresCheckingExclusionsDaoObject
+import java.sql.Date
 
 /**
  * This scala class provide the place holder to do the UTP data processing
@@ -247,8 +247,16 @@ object ReferenceDataObject {
     logger.debug("UtpReferenceData :: getCorrectProductForCurrentBussiness")
     UtpDaoObject.getCorrectProductForCurrentBussiness(penalisedBusId, correctionTypecobId)
   }
-}
 
+  /**
+   *  verify is FaresCheckingExclusions
+   */
+  def isFareCheckExclusion(locIssueDate: Date, fareRec: FareDBRecord): Boolean = {
+    logger.debug("UtpReferenceData :: isFareCheckExclusion")
+    return FaresCheckingExclusionsDaoObject.getFaresCheckingExclusionsId(locIssueDate,fareRec)
+  }
+
+}
 
 /**
  *   This scala Object provide the place holder do the UTP data processing
@@ -260,6 +268,6 @@ object ReferenceDataObject {
 
 }*/
 
-class ReferenceData{
-  
+class ReferenceData {
+
 }

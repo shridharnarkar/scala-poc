@@ -16,7 +16,7 @@ class FaresCheckingExclusions(tag: Tag)
   def fchId: Rep[BigDecimal] = column[BigDecimal]("FCH_ID", O.PrimaryKey)
   def issuingLocation: Rep[Option[String]] = column[String]("ISSUING_LOCATION", O.Nullable)
   def originLocation: Rep[Option[String]] = column[String]("ORIGIN_LOCATION", O.Nullable)
-  def destinationLoction: Rep[Option[String]] = column[String]("DESTINATION_LOCATION", O.Nullable)
+  def destinationLocation: Rep[Option[String]] = column[String]("DESTINATION_LOCATION", O.Nullable)
   def route: Rep[Option[String]] = column[String]("ROUTE", O.Nullable)
   def product: Rep[Option[String]] = column[String]("PRODUCT", O.Nullable)
   def ticketStatus: Rep[Option[String]] = column[String]("TICKET_STATUS", O.Nullable)
@@ -28,6 +28,6 @@ class FaresCheckingExclusions(tag: Tag)
   
   
   // Every table needs a * projection with the same type as the table's type parameter
-  def * = (fchId, issuingLocation, originLocation, destinationLoction, route, product, ticketStatus, fare, withEffectFrom, withEffectUntil, nullFare, sellingLocation) <> (FaresCheckingExclusionsDBRecord.tupled, FaresCheckingExclusionsDBRecord.unapply)
+  def * = (fchId, issuingLocation, originLocation, destinationLocation, route, product, ticketStatus, fare, withEffectFrom, withEffectUntil, nullFare, sellingLocation) <> (FaresCheckingExclusionsDBRecord.tupled, FaresCheckingExclusionsDBRecord.unapply)
 
 }
