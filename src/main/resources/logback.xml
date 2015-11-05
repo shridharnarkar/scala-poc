@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
+        <file>C:/Lennon/POC/logs/lennon-poc.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
+        </encoder>
+    </appender>
+     
+    <root level="TRACE">
+        <appender-ref ref="fileAppender" />
+    </root>
+</configuration>
