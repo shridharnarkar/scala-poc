@@ -30,16 +30,22 @@ object FaresCheckingExclusionsDaoObject {
 
   /**
    *  fecth result for LN4350S_V_IF_EXCLUDE_FARE
-   */
+   *//*
   val fareCheckingExclusionQuery = for {
     //(fchId, issuingLocation, originLocation, destinationLoction, route, product, ticketStatus, fare, withEffectFrom, withEffectUntil, nullFare, sellingLocation) 
     (locIssueDate, issuingLocation, originLocation, destinationLocation, route, product, ticketStatus, fare, nullFare, sellingLocation) <- Parameters[(Date, Option[String], Option[String], Option[String], Option[String], Option[String], Option[String], Option[BigDecimal], String, Option[String])]
-    fce <- fCheckExcQuery if (fce.issuingLocation.get === issuingLocation && fce.originLocation.get === originLocation && fce.destinationLocation.get === destinationLocation && fce.route.get === route && fce.product.get === product && fce.ticketStatus.get === ticketStatus && fce.sellingLocation.get === sellingLocation && (fce.withEffectFrom <= locIssueDate && fce.withEffectUntil <= locIssueDate) && fce.nullFare == 'Y' && fce.fare.get === fare)
-  } yield fce
+    fce <- fCheckExcQuery if (fce.issuingLocation.get === issuingLocation && fce.originLocation.get === originLocation && fce.destinationLocation.get === destinationLocation &&  fce.route.get === route && fce.product.get === product && fce.ticketStatus.get === ticketStatus && fce.sellingLocation.get === sellingLocation && (fce.withEffectFrom <= locIssueDate && fce.withEffectUntil <= locIssueDate) && fce.nullFare == 'Y' && fce.fare.get == fare)
+  } yield fce*/
 
+  val fareCheckingExclusionQuery1 = for {
+    //(fchId, issuingLocation, originLocation, destinationLoction, route, product, ticketStatus, fare, withEffectFrom, withEffectUntil, nullFare, sellingLocation) 
+    ( issuingLocation) <- Parameters[String]
+    fce <- fCheckExcQuery if (fce.issuingLocation.get == issuingLocation)
+  } yield fce
+  
   /**
    * get FaresCheckingExclusions by Value column
-   */
+   */ 
   def getFaresCheckingExclusionsById(fchId: BigDecimal): FaresCheckingExclusionsDBRecord = {
 
     logger.debug("FaresCheckingExclusionsDAO :: getFaresCheckingExclusionsDBRecordById >>")
@@ -73,16 +79,8 @@ object FaresCheckingExclusionsDaoObject {
     try {
       Await.result(
         db.run(
-          fareCheckingExclusionQuery(locIssueDate,
-            Some(fareRec.issuingLocation.getOrElse("")),
-            Some(fareRec.originLocation.getOrElse("")),
-            Some(fareRec.destinationLocation.getOrElse("")),
-            Some(fareRec.route.getOrElse("")),
-            Some(fareRec.product.getOrElse("")),
-            Some(fareRec.ticketStatus.getOrElse("")),
-            Some(fareRec.fare.get),
-            fareRec.nullFare,
-            Some(fareRec.sellingLocation.getOrElse(""))).result).map {
+          fareCheckingExclusionQuery1(
+            fareRec.issuingLocation.getOrElse("")).result).map {
             x => x.foreach { y => faresCheckingExclusions = y }
           }, Duration.Inf)
       logger.debug("FaresCheckingExclusionsDAO ::  getFaresCheckingExclusionsId  >> " + faresCheckingExclusions)

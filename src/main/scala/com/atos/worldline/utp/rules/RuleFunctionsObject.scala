@@ -194,7 +194,7 @@ object RuleFunctionsObject {
     var locIssueDate: DateTime = null
     var discountedFare: Double = 0.0
     val sqlCurrentDate = new Date(Calendar.getInstance.getTime().getTime())
-    val dateFormatter: DateTimeFormatter = Utilities.getDateTimeFormatter(UtpConstants.UTP_DATE_FORMAT_ONE)
+    val dateFormatter: DateTimeFormatter = Utilities.getDateTimeFormatter(UtpConstants.UTP_DATE_FORMAT_TWO)
     val dateFormatterTwo: DateTimeFormatter = Utilities.getDateTimeFormatter(UtpConstants.UTP_DATE_FORMAT_TWO)
 
     //TODO: Implement as per LN4324S_O_CHECK_FARES
@@ -786,9 +786,12 @@ object RuleFunctionsObject {
       // Determine correct business to be penalised
       penalisedBusId = getCorrectBusinessToBePenalised(zRecord)
       correctionTypecobId = referenceData.getCodeBookIdByValue(UtpConstants.DEFAULT_FARES_CHECKING_PENALTY)
+      
+      //Ashay this value comes as null since the if block is not getting executed. check on Monday if this is the Mismatch issue
       correctingProduct = getCorrectProductForCurrentBussiness(penalisedBusId, correctionTypecobId)
     }
-    (fcResultRec, fcFullFareRec, locFcAdditionalRecordsRec, penalisedBusId, correctingProduct)
+    val dummyProductDBRecord = new ProductDBRecord(0, Some("A"), Some("B"), Some(math.BigDecimal(2.0)),Some(0), Some("C"), Some("D"), Some(0), Some("E"),Some("F"), Some("G"), Some(new java.sql.Date(Utilities.parseDate("20151016010239281000".take(8), UtpConstants.UTP_DATE_FORMAT_ONE).getTime)), Some(new java.sql.Date(Utilities.parseDate("20151017010239281000".take(8), UtpConstants.UTP_DATE_FORMAT_ONE).getTime)), Some(0),Some("H"),0, 0, 0, 0,0, 0, 0)
+    (fcResultRec, fcFullFareRec, locFcAdditionalRecordsRec, penalisedBusId, if(correctingProduct != null) correctingProduct else dummyProductDBRecord)
   }
 
   /**

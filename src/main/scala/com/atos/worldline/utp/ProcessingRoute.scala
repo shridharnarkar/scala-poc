@@ -85,9 +85,7 @@ object ProcessingRoute {
                       for (zRecValue <- zRecordList) Utilities.getZRecordLine(zRecValue, outputLine)
                       outputLine //Returning Output RecordLine
                     case _ =>
-                      outputLine.append(camelMsg.body.toString())
                       outputLine.append('\n') //adding new line character to the end of the outputLine
-                      outputLine //Returning Output RecordLine
                   }
                  outputLine //Returning Output RecordLine
           case _ =>
