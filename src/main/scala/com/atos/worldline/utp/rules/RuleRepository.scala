@@ -170,7 +170,7 @@ object RuleRepository {
           Utilities.setZRecordAttrValue(zRecordCopyThree, UtpConstants.ZRecord_NonIssueMarker, referenceData.getCodeBookIdByValue(UtpConstants.ZRecord_NonIssueMarker).toString())
         }
 
-        Utilities.setZRecordAttrValue(zRecordCopyThree, UtpConstants.ZRecord_TransactionValue, "-" + "%014.2f".format(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_RetailItemID)))
+        Utilities.setZRecordAttrValue(zRecordCopyThree, UtpConstants.ZRecord_TransactionValue,"-" + ("%014.2f".format(Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_RetailItemID).toDouble)).toString())
         Utilities.setZRecordAttrValue(zRecordCopyThree, UtpConstants.ZRecord_NumberofTickets, "-" + Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_NumberofTickets))
         Utilities.setZRecordAttrValue(zRecordCopyThree, UtpConstants.ZRecord_PeriodofValidity, "-" + Utilities.getZRecordAttrValue(zRecord, UtpConstants.ZRecord_PeriodofValidity))
         Utilities.setZRecordAttrValue(zRecordCopyThree, UtpConstants.ZRecord_SystemGeneratedMarker, referenceData.getCodeBookIdByValue("Fares Checking Cancellation").toString())
